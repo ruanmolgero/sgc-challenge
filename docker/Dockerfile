@@ -13,14 +13,14 @@ RUN apt update; apt -y upgrade; apt -y autoclean; apt -y autoremove
 # We need git to clone our OpenSSL wrapper, the LibcryptoSEC.
 # Also, we need wget to dowload a specific version of OpenSSL.
 # Finally, gcc, g++, and make to get it done :)
-RUN apt -y install git wget gcc g++ make vim
+RUN apt -y install git wget gcc g++ make vim cmake
 
 # Let's create a safe /home/ to go. It is not a proper user, it is just a folder.
-RUN mkdir /home/labsec/
+# RUN mkdir /home/
 
 # Let's install OpenSSL, as you know, OpenSSL is a open source project to use crypto.
 # Here, we will download version 1.0.2k and install it in /usr/local/ssl/ in order to not mess with the OS's one. 
-RUN cd /home/labsec/ \
+RUN cd ~/ \
     && wget https://www.openssl.org/source/old/1.0.2/openssl-1.0.2k.tar.gz \
     && tar -xvf openssl-1.0.2k.tar.gz \
     && cd openssl-1.0.2k/ \
@@ -29,7 +29,7 @@ RUN cd /home/labsec/ \
     && make install
 
 # Libp11
-RUN cd /home/labsec/ \
+RUN cd ~/ \
     && wget https://github.com/OpenSC/libp11/releases/download/libp11-0.4.7/libp11-0.4.7.tar.gz \
     && tar -xvf libp11-0.4.7.tar.gz \
     && cd libp11-0.4.7/ \
@@ -40,7 +40,7 @@ RUN cd /home/labsec/ \
     && make install
 
 # And now, LibcryptoSEC.
-RUN cd /home/labsec/ \
+RUN cd ~/ \
     && git clone https://github.com/LabSEC/libcryptosec.git \
     && cd libcryptosec/ \
     && export OPENSSL_PREFIX=/usr/local/ssl \
@@ -56,7 +56,7 @@ RUN echo '\ncat /opt/README' >> ~/.bashrc
 # Creating the challenge directory.
 # Good Luck!
 # docker run -ti --name labsec-challenge labsec-challenge bash
-RUN mkdir /home/labsec/challenge
-COPY challenge.cpp /home/labsec/challenge/
-COPY Makefile /home/labsec/challenge/
+RUN mkdir ~/challenge
+COPY challenge.cpp ~/challenge/
+COPY Makefile ~/challenge/
 COPY README /opt/

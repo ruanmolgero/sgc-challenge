@@ -4,7 +4,7 @@
 # docker build -t labsec-challenge .
 
 # First, we need to download the Ubuntu docker image.
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 # Here, we are doing some updates, to be safe! Better safe than sorry.
 RUN apt update; apt -y upgrade; apt -y autoclean; apt -y autoremove 
@@ -13,7 +13,7 @@ RUN apt update; apt -y upgrade; apt -y autoclean; apt -y autoremove
 # We need git to clone our OpenSSL wrapper, the LibcryptoSEC.
 # Also, we need wget to dowload a specific version of OpenSSL.
 # Finally, gcc, g++, and make to get it done :)
-RUN apt -y install git wget gcc g++ make vim cmake
+RUN apt -y install git wget gcc g++ make vim cmake libc++-dev build-essential
 
 # Let's create a safe /home/ to go. It is not a proper user, it is just a folder.
 # RUN mkdir /home/

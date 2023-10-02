@@ -3,6 +3,7 @@ project("challenge")
 
 message(STATUS "**************** Building challenge ****************")
 
+set(CXX_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(${PROJECT_NAME} challenge.cpp)

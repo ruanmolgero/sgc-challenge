@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/workspaces/sgc-challenge/build",
+  "command": "/usr/bin/c++   -I/usr/local/ssl/include -I/usr/local/include/libcryptosec -I/opt/libp11/include    -O0 -Wall -c -pthread -o CMakeFiles/challenge.dir/challenge.cpp.o -c /workspaces/sgc-challenge/challenge.cpp",
+  "file": "/workspaces/sgc-challenge/challenge.cpp"
+}
+]

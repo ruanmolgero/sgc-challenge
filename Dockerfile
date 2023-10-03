@@ -4,7 +4,7 @@
 # docker build -t labsec-challenge .
 
 # First, we need to download the Ubuntu docker image.
-FROM ubuntu:22.04
+FROM ubuntu:18.04
 
 # Here, we are doing some updates, to be safe! Better safe than sorry.
 RUN apt update; apt -y upgrade; apt -y autoclean; apt -y autoremove 

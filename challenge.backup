@@ -1,0 +1,42 @@
+#include <string>
+// libcryptosec
+#include <libcryptosec/MessageDigest.h>
+// popper/glib (pdf libs)
+#include <glib-2.0/glib-object.h>
+#include <poppler/glib/poppler.h>
+
+int main(int argc, char **argv)
+{
+	// std::cout << "\033[1;31m teste \033[0m" << std::endl;
+	const char* pdfPath = "file:///workspaces/sgc-challenge/assinaturas.pdf";
+	GError *error = nullptr;
+	PopplerDocument *document = poppler_document_new_from_file(pdfPath, nullptr, &error);
+
+	if (!document)
+	{
+		std::cerr << "Erro ao abrir o arquivo PDF: " << error->message << std::endl;
+		g_error_free(error);
+		return 1;
+	}
+
+	int num_pages = poppler_document_get_n_pages(document);
+	for (int i = 0; i < num_pages; i++) {
+        PopplerPage *page = poppler_document_get_page(document, i);
+        gchar *text = poppler_page_get_text(page);
+
+        // Imprime o texto da página
+        std::cout << "Página " << i + 1 << ":\n" << text << std::endl;
+
+        g_free(text);
+        g_object_unref(page);
+    }
+
+    // Libera recursos
+    g_object_unref(document);
+
+	// std::cout << "numero páginas: " << num_pages << std::endl;
+
+	MessageDigest::loadMessageDigestAlgorithms();
+
+	return 0;
+}

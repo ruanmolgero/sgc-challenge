@@ -1,7 +1,7 @@
 [
 {
   "directory": "/workspaces/sgc-challenge/build",
-  "command": "/usr/bin/c++   -I/usr/local/ssl/include -I/usr/local/include/libcryptosec -I/opt/libp11/include    -O0 -Wall -c -pthread -o CMakeFiles/challenge.dir/challenge.cpp.o -c /workspaces/sgc-challenge/challenge.cpp",
+  "command": "/usr/bin/c++   -I/usr/local/ssl/include -I/usr/local/include/libcryptosec -I/opt/libp11/include -I/usr/include/poppler/glib    -O0 -Wall -c -pthread -std=gnu++11 -o CMakeFiles/challenge.dir/challenge.cpp.o -c /workspaces/sgc-challenge/challenge.cpp",
   "file": "/workspaces/sgc-challenge/challenge.cpp"
 }
 ]

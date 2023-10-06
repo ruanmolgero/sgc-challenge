@@ -13,21 +13,17 @@ add_executable(${PROJECT_NAME} challenge.cpp)
 
 # Diretórios de inclusão
 include_directories(
-                    # libcryptosec include
+                    # libcryptosec includes
                     "/usr/local/ssl/include" 
                     "/usr/local/include/libcryptosec/" 
                     "/opt/libp11//include/"
-                    # poppler include
-                    # "/usr/include/poppler/glib/"
-                    # # glib-2.0 include
-                    # "/usr/include/glib-2.0/"
-                    # "/usr/lib/x86_64-linux-gnu/glib-2.0/include/"
-                    # "/usr/include/cairo/"
                     )
 
-# Bibliotecas a serem vinculadas
-link_libraries(crypto)
-link_directories("/usr/local/ssl/lib")
+# Adicione os arquivos .hpp e .cpp aos respectivos targets
+# file(GLOB HEADER_FILES "include/*.hpp")
+# file(GLOB SOURCE_FILES "src/*.cpp")
+# add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
+
 
 # Opções de compilação
 target_compile_options(${PROJECT_NAME} PRIVATE -O0 -Wall -c -pthread)
@@ -36,6 +32,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE -O0 -Wall -c -pthread)
 #################################################
 # libcryptosec
 target_link_libraries(${PROJECT_NAME} "/usr/local/lib64/libcryptosec.so")
-# # poppler link
-# target_link_libraries(${PROJECT_NAME} poppler-glib)
-# target_link_libraries(${PROJECT_NAME} glib-2.0 gobject-2.0)
+target_link_libraries(${PROJECT_NAME} crypto)
+
+# Bibliotecas a serem vinculadas
+# link_libraries(crypto)
+link_directories("/usr/local/ssl/lib")

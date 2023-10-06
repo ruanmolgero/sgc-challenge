@@ -1,13 +1,20 @@
 #include <string>
 #include <fstream>
+#include <iomanip>
 // libcryptosec
 #include <libcryptosec/MessageDigest.h>
 #include <libcryptosec/RSAKeyPair.h>
-// popper/glib (pdf libs)
-// #include <glib-2.0/glib-object.h>
-// #include <poppler/glib/poppler.h>
+#include <libcryptosec/ByteArray.h>
+#include <libcryptosec/PublicKey.h>
+#include <libcryptosec/PrivateKey.h>
+#include <libcryptosec/RSAPublicKey.h>
+#include <libcryptosec/RSAPrivateKey.h>
+#include <libcryptosec/Signer.h>
+// openssl
+#include <openssl/sha.h>
+#include <openssl/pem.h>
 
-int main(int argc, char **argv)
+void create_keys()
 {
     // Generating keys/saving them on files
     try
@@ -34,7 +41,6 @@ int main(int argc, char **argv)
             if (!public_key_file || !private_key_file)
             {
                 std::cerr << "Erro ao abrir os arquivos de chave." << std::endl;
-                return 1;
             }
 
             public_key_file << public_key_pem;
@@ -52,11 +58,160 @@ int main(int argc, char **argv)
     catch (const AsymmetricKeyException &e)
     {
         std::cerr << "Erro ao criar o par de chaves: " << e.what() << std::endl;
-        return 1;
+    }
+}
+
+std::string calculateSHA256Hash(const std::string &data)
+{
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, data.c_str(), data.size());
+    SHA256_Final(hash, &sha256);
+
+    std::stringstream ss;
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
     }
 
-    // std::cout << chave_teste.getPublicKey()->getPemEncoded() << std::endl;
-    // std::cout << *ptrChavePublica << std::endl;
+    return ss.str();
+}
+
+std::string get_pdf_hash(std::string pdf_path)
+{
+    try
+    {
+        // Abre o pdf
+        std::ifstream pdf_file("desligamento_usina.pdf", std::ios::binary);
+
+        if (!pdf_file)
+        {
+            std::cerr << "Erro ao abrir o arquivo PDF." << std::endl;
+        }
+
+        // Lê conteúdo do pdf
+        std::ostringstream pdf_data;
+        pdf_data << pdf_file.rdbuf();
+
+        pdf_file.close();
+
+        std::string pdf_contents = pdf_data.str();
+
+        // Calcula o hash SHA256 dos dados do PDF
+        std::string pdf_hash = calculateSHA256Hash(pdf_contents);
+
+        // std::cout << "Hash SHA-256 do PDF: " << pdf_hash << std::endl;
+        return pdf_hash;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Erro: " << e.what() << std::endl;
+        return "1";
+    }
+}
+
+int main(int argc, char **argv)
+{
+    create_keys();
+
+    std::string pdf_hash = get_pdf_hash("desligamento_usina.pdf");
+    std::cout << "Hash SHA-256 do PDF: " << get_pdf_hash("desligamento_usina.pdf") << std::endl;
+
+    try
+    {
+        const char *private_key_path = ".keys/private_key_0.pem";
+
+        // Carregue a chave privada a partir do arquivo PEM usando OpenSSL
+        FILE *private_key_file = fopen(private_key_path, "r");
+        if (!private_key_file)
+        {
+            throw std::runtime_error("Erro ao abrir o arquivo de chave privada");
+        }
+
+        EVP_PKEY *evp_private_key = PEM_read_PrivateKey(private_key_file, nullptr, nullptr, nullptr);
+        fclose(private_key_file);
+
+        if (!evp_private_key)
+        {
+            throw std::runtime_error("Erro ao carregar a chave privada usando OpenSSL");
+        }
+
+        // Agora você tem a chave privada carregada em 'evpPrivateKey'
+
+        PrivateKey private_key = PrivateKey(evp_private_key);
+        std::cout << private_key.getPemEncoded() << std::endl;
+
+        // Certifique-se de liberar a memória da chave privada quando não for mais necessária
+        // EVP_PKEY_free(evp_private_key);
+        // ###################################################################################
+
+        const char *public_key_path = ".keys/public_key_0.pem";
+
+        // Carregue a chave privada a partir do arquivo PEM usando OpenSSL
+        FILE *public_key_file = fopen(public_key_path, "r");
+        if (!public_key_file)
+        {
+            throw std::runtime_error("Erro ao abrir o arquivo de chave privada");
+        }
+
+        EVP_PKEY *evp_public_key = PEM_read_PUBKEY(public_key_file, nullptr, nullptr, nullptr);
+        fclose(public_key_file);
+
+        if (!evp_public_key)
+        {
+            throw std::runtime_error("Erro ao carregar a chave privada usando OpenSSL");
+        }
+
+        // Agora você tem a chave publica carregada em 'evp_public_key'
+
+        PublicKey public_key = PublicKey(evp_public_key);
+        std::cout << public_key.getPemEncoded() << std::endl;
+
+        // Certifique-se de liberar a memória da chave privada quando não for mais necessária
+        EVP_PKEY_free(evp_public_key);
+
+        std::cout << "1" << std::endl;
+        ByteArray pdf_hash_data(pdf_hash);
+        std::cout << pdf_hash_data.toString() << std::endl;
+        // ByteArray pdf_hash = byte_array;
+        std::cout << "2" << std::endl;
+        // Assine o hash do documento usando a chave privada
+        ByteArray assinatura = Signer::sign(private_key, pdf_hash_data, MessageDigest::SHA256);
+
+        // Agora você tem a assinatura gerada na variável 'assinatura'
+
+        // Verificar a assinatura (opcional)
+        // Suponha que você já tenha carregado a chave pública correspondente em 'publicKey'
+        // PublicKey publicKey = loadPublicKeyFromFile("public_key.pem");
+        std::cout << "3" << std::endl;
+        bool isValid = Signer::verify(public_key, assinatura, pdf_hash_data, MessageDigest::SHA256);
+        std::cout << "4" << std::endl;
+        if (isValid)
+        {
+            std::cout << "A assinatura é válida." << std::endl;
+        }
+        else
+        {
+            std::cout << "A assinatura não é válida." << std::endl;
+        }
+        std::cout << "5" << std::endl;
+    }
+    catch (AsymmetricKeyException &e)
+    {
+        std::cerr << "Erro ao assinar ou verificar a assinatura: " << e.getDetails() << std::endl;
+        return 1;
+    }
+    catch (SignerException &e)
+    {
+        std::cerr << "Erro ao assinar ou verificar a assinatura: " << e.what() << std::endl;
+        return 1;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Erro: " << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }

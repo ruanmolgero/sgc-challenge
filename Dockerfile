@@ -14,8 +14,6 @@ RUN apt update; apt -y upgrade; apt -y autoclean; apt -y autoremove
 # Also, we need wget to dowload a specific version of OpenSSL.
 # Finally, gcc, g++, and make to get it done :)
 RUN apt -y install git wget gcc g++ make vim cmake libc++-dev build-essential 
-# libboost-all-dev 
-# libpoppler-glib-dev
 
 # Let's create a safe /home/ to go. It is not a proper user, it is just a folder.
 # RUN mkdir /home/

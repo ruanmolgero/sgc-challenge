@@ -7,6 +7,7 @@ message(STATUS "**************** Building challenge ****************")
 # Configurações globais do projeto
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_BUILD_TYPE Debug)
 
 # Adicionar o executável
 add_executable(${PROJECT_NAME} challenge.cpp)
@@ -18,12 +19,6 @@ include_directories(
                     "/usr/local/include/libcryptosec/" 
                     "/opt/libp11//include/"
                     )
-
-# Adicione os arquivos .hpp e .cpp aos respectivos targets
-# file(GLOB HEADER_FILES "include/*.hpp")
-# file(GLOB SOURCE_FILES "src/*.cpp")
-# add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
-
 
 # Opções de compilação
 target_compile_options(${PROJECT_NAME} PRIVATE -O0 -Wall -c -pthread)

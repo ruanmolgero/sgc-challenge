@@ -1,4 +1,5 @@
 #include <string>
+#include <iostream>
 #include <fstream>
 #include <iomanip>
 // libcryptosec
@@ -19,7 +20,7 @@ void create_keys()
     // Generating keys/saving them on files
     try
     {
-        const int num_operators = 3;
+        const int num_operators = 1;
         for (int i = 0; i < num_operators; i++)
         {
             // Criação pares de chaves
@@ -36,8 +37,8 @@ void create_keys()
             std::stringstream private_key_filename;
             private_key_filename << ".keys/private_key_" << i << ".pem";
 
-            std::ofstream public_key_file(public_key_filename.str());
-            std::ofstream private_key_file(private_key_filename.str());
+            std::ofstream public_key_file(public_key_filename.str(), std::ios::binary | std::ios::in | std::ios::out);
+            std::ofstream private_key_file(private_key_filename.str(), std::ios::binary | std::ios::in | std::ios::out);
             if (!public_key_file || !private_key_file)
             {
                 std::cerr << "Erro ao abrir os arquivos de chave." << std::endl;
@@ -120,9 +121,10 @@ int main(int argc, char **argv)
 
     try
     {
+        // Caminho para arquivo de chave privada
         const char *private_key_path = ".keys/private_key_0.pem";
 
-        // Carregue a chave privada a partir do arquivo PEM usando OpenSSL
+        // Carrega a chave privada a partir do arquivo .pem usando OpenSSL
         FILE *private_key_file = fopen(private_key_path, "r");
         if (!private_key_file)
         {
@@ -131,24 +133,22 @@ int main(int argc, char **argv)
 
         EVP_PKEY *evp_private_key = PEM_read_PrivateKey(private_key_file, nullptr, nullptr, nullptr);
         fclose(private_key_file);
-
         if (!evp_private_key)
         {
             throw std::runtime_error("Erro ao carregar a chave privada usando OpenSSL");
         }
 
-        // Agora você tem a chave privada carregada em 'evpPrivateKey'
-
+        // Chave privada carregada em 'evp_private_key'
         PrivateKey private_key = PrivateKey(evp_private_key);
         std::cout << private_key.getPemEncoded() << std::endl;
 
-        // Certifique-se de liberar a memória da chave privada quando não for mais necessária
-        // EVP_PKEY_free(evp_private_key);
-        // ###################################################################################
+        // Libera a memória da chave privada quando não for mais necessária
+        EVP_PKEY_free(evp_private_key);
 
+        //
         const char *public_key_path = ".keys/public_key_0.pem";
 
-        // Carregue a chave privada a partir do arquivo PEM usando OpenSSL
+        // Carrega a chave pública a partir do arquivo .pem usando OpenSSL
         FILE *public_key_file = fopen(public_key_path, "r");
         if (!public_key_file)
         {
@@ -163,30 +163,23 @@ int main(int argc, char **argv)
             throw std::runtime_error("Erro ao carregar a chave privada usando OpenSSL");
         }
 
-        // Agora você tem a chave publica carregada em 'evp_public_key'
-
+        // Chave pública carregada em 'evp_public_key'
         PublicKey public_key = PublicKey(evp_public_key);
         std::cout << public_key.getPemEncoded() << std::endl;
 
-        // Certifique-se de liberar a memória da chave privada quando não for mais necessária
+        // Libera a memória da chave pública quando não for mais necessária
         EVP_PKEY_free(evp_public_key);
 
-        std::cout << "1" << std::endl;
         ByteArray pdf_hash_data(pdf_hash);
         std::cout << pdf_hash_data.toString() << std::endl;
-        // ByteArray pdf_hash = byte_array;
-        std::cout << "2" << std::endl;
-        // Assine o hash do documento usando a chave privada
-        ByteArray assinatura = Signer::sign(private_key, pdf_hash_data, MessageDigest::SHA256);
 
-        // Agora você tem a assinatura gerada na variável 'assinatura'
+        // Assina o hash do documento usando a chave privada
+        ByteArray assinatura = Signer::sign(private_key, pdf_hash_data, MessageDigest::SHA256);
 
         // Verificar a assinatura (opcional)
         // Suponha que você já tenha carregado a chave pública correspondente em 'publicKey'
         // PublicKey publicKey = loadPublicKeyFromFile("public_key.pem");
-        std::cout << "3" << std::endl;
         bool isValid = Signer::verify(public_key, assinatura, pdf_hash_data, MessageDigest::SHA256);
-        std::cout << "4" << std::endl;
         if (isValid)
         {
             std::cout << "A assinatura é válida." << std::endl;
@@ -195,7 +188,6 @@ int main(int argc, char **argv)
         {
             std::cout << "A assinatura não é válida." << std::endl;
         }
-        std::cout << "5" << std::endl;
     }
     catch (AsymmetricKeyException &e)
     {
